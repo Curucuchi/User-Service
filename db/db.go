@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -35,7 +36,7 @@ func Connect() {
 	}
 }
 
-func CreateUser(firstName, lastName, email, userName, password string) {
+func CreateUser(firstName, lastName, email, userName, password string) (string, error) {
 	ctx := context.Background()
 
 	db, err := sql.Open("mysql", DSN)
@@ -50,23 +51,22 @@ func CreateUser(firstName, lastName, email, userName, password string) {
 	if uniqueU && uniqueE {
 		res, err := db.ExecContext(ctx, `INSERT INTO Person VALUES (0,?,?,?,?,PASSWORD(?))`, firstName, lastName, strings.ToLower(email), strings.ToLower(userName), password)
 		if err != nil {
-			log.Fatal("There was an issue creating user: "+userName, err)
+			return "There was an issue creating user: " + userName, err
 		}
 		ID, err := res.LastInsertId()
 		if err != nil {
-			log.Fatal("There was an issue getting LastInsertID(): ", err)
+			return "There was an issue getting LastInsertID(): ", err
 		}
-
-		fmt.Println("UserID:User", ID, userName+" Was created successfully")
+		return "UserID:User " + strconv.Itoa(int(ID)) + userName + " Was created successfully", nil
 	} else if !uniqueU {
-		fmt.Println("Username already in use.")
+		return "Username already in use.", nil
 	} else if !uniqueE {
-		fmt.Println("Email already in use.")
+		return "Email already in use.", nil
 	}
-
+	return "", nil
 }
 
-func DeleteUser(userName, password string) {
+func DeleteUser(userName, password string) (string, error) {
 	db, err := sql.Open("mysql", DSN)
 	if err != nil {
 		log.Fatal("There was an issue opening the DB: ", err)
@@ -75,31 +75,31 @@ func DeleteUser(userName, password string) {
 	defer db.Close()
 
 	verified := VerifyCreds(userName, password)
+
 	if verified {
 		query := "DELETE FROM Person WHERE userName = " + `"` + strings.ToLower(userName) + `"`
 
 		res, err := db.Exec(query)
 		if err != nil {
-			log.Fatal("There was an issue deleting user: "+userName, err)
+			return "There was an issue executing query: " + userName, err
 		}
 		check, err := res.RowsAffected()
 		if err != nil {
-			log.Fatal("Error checking rowsAffected()", err)
+			return "Error checking rowsAffected()", err
 		}
 
 		if check == 0 {
-			log.Fatal("No Rows were affected")
+			return "No Rows were affected", nil
 		} else {
-			fmt.Println("User: " + userName + " was successfully deleted!")
+			return "User: " + userName + " was successfully deleted!", nil
 		}
-	} else {
-		fmt.Println("Incorrect username or password!")
 	}
-
+	return "Incorrect Username or Password!", nil
 }
 
-func SignIn(userName, password string) {
+func SignIn(userName, password string) (string, error) {
 
+	return "", nil
 }
 
 // true == unique false == !unique
@@ -134,6 +134,8 @@ func UniqueUserEM(userName, email string) (U, E bool) {
 	return true, true
 }
 
+//function will be used to sign in and delete user
+//checks db that username matches password provided from user
 func VerifyCreds(userName, password string) bool {
 	db, err := sql.Open("mysql", DSN)
 	if err != nil {

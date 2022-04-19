@@ -21,7 +21,7 @@ message UserRequest {
 }
 
 message UserResponse {
-    bool result = 1;
+    string result = 1;
 }
 
 message SignUpRequest {
@@ -29,7 +29,7 @@ message SignUpRequest {
 }
 
 message SignUpResponse {
-    bool result = 1;
+    string result = 1;
 }
 
 service UserService {
