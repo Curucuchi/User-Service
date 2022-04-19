@@ -1,0 +1,6 @@
+services:
+  db:
+    image: mariadb
+    environment:
+      MARIADB_ROOT_PASSWORD: easy2remember
+      MARIADB_DATABASE: users
