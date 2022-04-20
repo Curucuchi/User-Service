@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"users/db"
@@ -12,7 +13,13 @@ import (
 
 type Server struct{}
 
+func main() {
+	Serve()
+}
+
 func Serve() {
+	fmt.Println("Server running on port 50051...")
+
 	lis, err := net.Listen("tcp", "0.0.0.0:50051")
 	if err != nil {
 		log.Fatal("Unable to listen on port 50051: ", err)
